@@ -1,58 +1,101 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Sistem Informasi Akademik (SIAKAD)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Aplikasi Web Sistem Informasi Akademik berbasis **Laravel** dengan manajemen multi-role (**Admin**, **Dosen**, **Mahasiswa**), modul CRUD Mahasiswa, Dosen, Jadwal Kuliah, Penilaian Akademik (KHS), serta Manajemen Admin dan Pengaturan Profil Mandiri.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 🛠️ Prasyarat Sistem (Prerequisites)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Pastikan di komputer/server Anda telah terinstall:
+- **PHP** >= 8.2 (disarankan PHP 8.3+) dengan ekstensi: `pdo_mysql`, `mbstring`, `openssl`, `tokenizer`, `xml`, `ctype`, `json`, `bcmath`.
+- **Composer** (Dependency Manager untuk PHP).
+- **MySQL / MariaDB Database Server**.
+- *(Opsional)* **Node.js & NPM** jika ingin memodifikasi aset frontend.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## 🚀 Panduan Setup Awal (Step by Step Clone)
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+Ikuti langkah-langkah berikut setelah Anda melakukan clone repositori:
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
+### 1. Masuk ke Direktori Proyek
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+cd aplikasi-akademik
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+### 2. Install Dependensi PHP (Composer)
+```bash
+composer install
+```
 
-## Contributing
+### 3. Duplikasi File Konfigurasi Environment (`.env`)
+Salin file `.env.example` menjadi `.env`:
+- **Linux / macOS:**
+  ```bash
+  cp .env.example .env
+  ```
+- **Windows (Command Prompt / PowerShell):**
+  ```cmd
+  copy .env.example .env
+  ```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### 4. Generate Application Key (APP_KEY)
+```bash
+php artisan key:generate
+```
 
-## Code of Conduct
+### 5. Buat Database dan Sesuaikan File `.env`
+1. Buat database baru di MySQL (misal bernama `aplikasi_akademik`):
+   ```sql
+   CREATE DATABASE aplikasi_akademik;
+   ```
+2. Buka file `.env` dan sesuaikan koneksi database Anda:
+   ```env
+   DB_CONNECTION=mysql
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=aplikasi_akademik
+   DB_USERNAME=root
+   DB_PASSWORD=password_mysql_anda
+   ```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### 6. Jalankan Migrasi & Database Seeder
+Perintah ini akan membuat seluruh tabel di database dan mengisi data awal (akun Admin, Dosen, Mahasiswa, Mata Kuliah, Jadwal, dan Nilai):
+```bash
+php artisan migrate:fresh --seed
+```
 
-## Security Vulnerabilities
+### 7. Jalankan Server Lokal Laravel
+```bash
+php artisan serve
+```
+Aplikasi sekarang dapat diakses melalui browser di:  
+👉 **[http://localhost:8000](http://localhost:8000)** (atau URL yang tertera di terminal).
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+---
 
-## License
+## 🔑 Akun Demo Bawaan (Default Seeded Accounts)
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Setelah menjalankan `php artisan migrate:fresh --seed`, Anda dapat langsung login menggunakan akun berikut:
+
+| Role | Email | Password | Hak Akses Utama |
+| :--- | :--- | :--- | :--- |
+| **Admin** | `admin@akademik.com` | `password` | Kelola Admin, Mahasiswa, Dosen, Jadwal, Nilai |
+| **Dosen** | `budi.santoso@akademik.com` | `password` | Lihat Jadwal Mengajar, Kelola/Input Nilai Mahasiswa |
+| **Mahasiswa** | `ahmad.fauzi@student.akademik.com` | `password` | Lihat Jadwal Kuliah & Kartu Hasil Studi (KHS) |
+
+*(Di halaman login juga tersedia tombol "Klik Otomatis" untuk mengisi akun demo tanpa mengetik).*
+
+---
+
+## 🧪 Menjalankan Pengujian Otomatis (Tests)
+
+Untuk memverifikasi fungsionalitas aplikasi dan role-based access control:
+```bash
+php artisan test
+```
+
+Format styling kode dengan Laravel Pint:
+```bash
+vendor/bin/pint
+```
