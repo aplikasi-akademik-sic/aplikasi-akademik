@@ -5,6 +5,14 @@
 @section('page_subtitle', 'Informasi kelas perkuliahan dan daftar mahasiswa serta nilai')
 
 @section('content')
+@php
+    $viewer = auth()->user();
+    $canViewClass = $viewer->isAdmin() || ($viewer->isLecturer() && $viewer->lecturerProfile?->id === $schedule->lecturer_id);
+@endphp
+@unless($canViewClass)
+    <p class="muted">Detail kelas ini tidak tersedia untuk akun Anda.</p>
+    <a class="student-action" href="{{ route('schedules.index') }}">Kembali ke jadwal</a>
+@else
 <div class="space-y-6">
     <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-100">
@@ -53,7 +61,7 @@
         <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
             <h4 class="font-bold text-slate-800">Mahasiswa & Nilai di Kelas Ini</h4>
             @if(Auth::user()->isAdmin() || (Auth::user()->isLecturer() && Auth::user()->lecturerProfile?->id === $schedule->lecturer_id))
-            <a href="{{ route('grades.create') }}" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold shadow">
+            <a href="{{ route('grades.create', ['course_id' => $schedule->course_id]) }}" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold shadow">
                 + Input Nilai Mahasiswa
             </a>
             @endif
@@ -100,4 +108,5 @@
         </div>
     </div>
 </div>
+@endunless
 @endsection

@@ -1,95 +1,93 @@
 @extends('layouts.app')
 
-@section('title', 'Jadwal Perkuliahan')
-@section('page_title', 'Jadwal Kuliah')
-@section('page_subtitle', 'Daftar jadwal perkuliahan, ruang, dosen pengampu, dan mata kuliah')
+@php
+    $user = auth()->user();
+    $isAdmin = $user->isAdmin();
+    $isLecturer = $user->isLecturer();
+    $title = $isAdmin ? 'Kelola Jadwal Kuliah' : ($isLecturer ? 'Jadwal Mengajar' : 'Jadwal Kuliah');
+    $semester = $user->isStudent() ? $user->studentProfile?->semester : null;
+    // Backend supplies semesterSchedules after filtering the query and before pagination.
+    $rows = $user->isStudent() ? ($semesterSchedules ?? null) : $schedules;
+    $hasProfile = !$isLecturer || $user->lecturerProfile !== null;
+@endphp
+
+@section('title', $title)
+@section('page_title', $title)
 
 @section('content')
-<div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-    <!-- Header with Filter & Add Button -->
-    <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <form method="GET" action="{{ route('schedules.index') }}" class="flex items-center gap-2">
-            <select name="day" onchange="this.form.submit()"
-                class="px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                <option value="">-- Semua Hari --</option>
-                @foreach(['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'] as $d)
-                    <option value="{{ $d }}" {{ $dayFilter == $d ? 'selected' : '' }}>{{ $d }}</option>
-                @endforeach
-            </select>
-            @if($dayFilter)
-                <a href="{{ route('schedules.index') }}" class="text-xs text-rose-500 hover:underline">Reset Filter</a>
+<section class="student-list" aria-label="{{ $title }}">
+    @if($user->isStudent() && (!$semester || !isset($rows)))
+        <p class="p-6 muted">{{ $semester ? "Jadwal untuk semester $semester belum tersedia." : 'Semester Anda belum tercatat.' }}</p>
+    @elseif(!$hasProfile)
+        <p class="p-6 muted">Belum ada jadwal. Akun Anda belum terhubung ke profil dosen.</p>
+    @else
+        <div class="student-toolbar">
+            <form method="GET" action="{{ route('schedules.index') }}" class="flex flex-wrap items-end gap-2">
+                <div class="form-field">
+                    <label for="day">Hari kuliah</label>
+                    <select id="day" name="day">
+                        <option value="">Semua hari</option>
+                        @foreach(['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'] as $day)
+                            <option @selected($dayFilter === $day)>{{ $day }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <button class="academic-button" type="submit">Tampilkan</button>
+            </form>
+            @if($isAdmin)
+                <a class="academic-button primary-button" href="{{ route('schedules.create') }}">Tambah Jadwal</a>
+            @elseif($semester)
+                <span>Semester {{ $semester }}</span>
             @endif
-        </form>
-
-        @if(Auth::user()->isAdmin())
-        <a href="{{ route('schedules.create') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl shadow-md shadow-indigo-600/20 transition">
-            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-            Tambah Jadwal
-        </a>
+        </div>
+        @if($rows->isEmpty())
+            <p class="p-6 muted">{{ $dayFilter ? "Belum ada jadwal pada hari $dayFilter." : 'Belum ada jadwal' }}</p>
+        @else
+            <div class="overflow-x-auto" tabindex="0" role="region" aria-label="Tabel jadwal">
+                <table class="student-table directory-table">
+                    <thead><tr>
+                        <th scope="col">Mata kuliah</th>
+                        @unless($isLecturer)<th scope="col">Dosen</th>@endunless
+                        <th scope="col">Hari</th><th scope="col">Jam</th><th scope="col">Ruang</th>
+                        @if($isAdmin)<th scope="col">Aksi</th>@endif
+                    </tr></thead>
+                    <tbody>
+                    @foreach($rows as $schedule)
+                        <tr>
+                            <th scope="row">
+                                @if($user->isStudent())
+                                    {{ $schedule->course?->name }}
+                                @else
+                                    <a class="student-action" href="{{ route('schedules.show', $schedule) }}">{{ $schedule->course?->name }}</a>
+                                @endif
+                            </th>
+                            @unless($isLecturer)<td>{{ $schedule->lecturer?->name }}</td>@endunless
+                            <td>{{ $schedule->day }}</td>
+                            <td class="whitespace-nowrap">{{ substr($schedule->start_time, 0, 5) }} – {{ substr($schedule->end_time, 0, 5) }}</td>
+                            <td>{{ $schedule->room }}</td>
+                            @if($isAdmin)
+                                <td><div class="student-actions">
+                                    <a class="student-action" href="{{ route('schedules.edit', $schedule) }}">Ubah</a>
+                                    <details class="student-delete">
+                                        <summary><span class="delete-label">Hapus</span><span class="cancel-label">Batal</span></summary>
+                                        <form method="POST" action="{{ route('schedules.destroy', $schedule) }}">
+                                            @csrf
+                                            @method('DELETE')
+                                            <p>Hapus jadwal {{ $schedule->course?->name }} hari {{ $schedule->day }} pukul {{ substr($schedule->start_time, 0, 5) }}? Nilai yang terhubung juga akan terhapus.</p>
+                                            <button type="submit" class="academic-button danger-button">Ya, hapus</button>
+                                        </form>
+                                    </details>
+                                </div></td>
+                            @endif
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table>
+            </div>
         @endif
-    </div>
-
-    <!-- Table -->
-    <div class="overflow-x-auto">
-        <table class="w-full text-left text-sm text-slate-600">
-            <thead class="bg-slate-50 text-slate-700 text-xs uppercase font-semibold border-b border-slate-100">
-                <tr>
-                    <th class="px-6 py-3.5">Hari & Waktu</th>
-                    <th class="px-6 py-3.5">Mata Kuliah</th>
-                    <th class="px-6 py-3.5">Dosen Pengampu</th>
-                    <th class="px-6 py-3.5">Ruang</th>
-                    <th class="px-6 py-3.5 text-right">Aksi</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100">
-                @forelse($schedules as $sched)
-                <tr class="hover:bg-slate-50/70 transition">
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 text-slate-800 mr-2">{{ $sched->day }}</span>
-                        <span class="text-xs text-slate-500 font-mono">{{ substr($sched->start_time, 0, 5) }} - {{ substr($sched->end_time, 0, 5) }}</span>
-                    </td>
-                    <td class="px-6 py-4">
-                        <div class="font-semibold text-slate-800">{{ $sched->course->name ?? '-' }}</div>
-                        <div class="text-xs text-slate-400 font-mono">{{ $sched->course->code ?? '' }} &bull; {{ $sched->course->credits ?? 0 }} SKS</div>
-                    </td>
-                    <td class="px-6 py-4 text-slate-700">{{ $sched->lecturer->name ?? '-' }}</td>
-                    <td class="px-6 py-4">
-                        <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-100">{{ $sched->room }}</span>
-                    </td>
-                    <td class="px-6 py-4 text-right space-x-1 whitespace-nowrap">
-                        <a href="{{ route('schedules.show', $sched) }}" class="inline-flex items-center px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition">
-                            Detail
-                        </a>
-                        @if(Auth::user()->isAdmin())
-                        <a href="{{ route('schedules.edit', $sched) }}" class="inline-flex items-center px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-xs font-semibold transition">
-                            Edit
-                        </a>
-                        <form action="{{ route('schedules.destroy', $sched) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus jadwal ini?')">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="inline-flex items-center px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg text-xs font-semibold transition">
-                                Hapus
-                            </button>
-                        </form>
-                        @endif
-                    </td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="5" class="px-6 py-8 text-center text-slate-400">
-                        Tidak ada data jadwal ditemukan.
-                    </td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-
-    <!-- Pagination -->
-    @if($schedules->hasPages())
-    <div class="p-4 border-t border-slate-100">
-        {{ $schedules->links() }}
-    </div>
+        @if($rows->hasPages())
+            <div class="p-4">{{ $rows->links() }}</div>
+        @endif
     @endif
-</div>
+</section>
 @endsection

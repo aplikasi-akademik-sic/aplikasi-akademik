@@ -29,6 +29,11 @@ class AuthController extends Controller
         $credentials = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required', 'string'],
+        ], [
+            'email.required' => 'Email wajib diisi.',
+            'email.email' => 'Masukkan alamat email yang valid.',
+            'password.required' => 'Password wajib diisi.',
+            'password.string' => 'Password harus berupa teks.',
         ]);
 
         $remember = $request->boolean('remember');

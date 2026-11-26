@@ -5,6 +5,23 @@
 @section('page_subtitle', 'Masukkan nilai akademik mahasiswa untuk kelas perkuliahan')
 
 @section('content')
+@php
+    $isLecturer = auth()->user()->isLecturer();
+    $selectedCourse = null;
+    if ($isLecturer) {
+        $schedules = $schedules->where('course_id', request()->integer('course_id'));
+        $selectedCourse = $schedules->first()?->course;
+        $students = $selectedCourse?->semester ? $students->where('semester', $selectedCourse->semester) : collect();
+    }
+@endphp
+@if($isLecturer && !$selectedCourse)
+    <p>Pilih mata kuliah dari daftar yang Anda ampu.</p>
+    <a class="student-action" href="{{ route('grades.index') }}">Ke daftar mata kuliah</a>
+@elseif($isLecturer && $students->isEmpty())
+    <h2 class="font-semibold">{{ $selectedCourse->name }}</h2>
+    <p>{{ $selectedCourse->semester ? 'Belum ada mahasiswa pada semester ini.' : 'Semester mata kuliah belum tercatat. Daftar mahasiswa untuk input nilai belum tersedia.' }}</p>
+    <a class="student-action" href="{{ route('grades.index') }}">Kembali ke daftar nilai</a>
+@else
 <div class="max-w-2xl bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 md:p-8">
     <form action="{{ route('grades.store') }}" method="POST" class="space-y-5">
         @csrf
@@ -70,4 +87,5 @@
         </div>
     </form>
 </div>
+@endif
 @endsection

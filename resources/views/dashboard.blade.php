@@ -1,39 +1,30 @@
 @extends('layouts.app')
 
 @section('title', 'Dashboard')
-@section('page_title', 'Dashboard Utama')
-@section('page_subtitle', 'Ringkasan informasi dan aktivitas akademik')
+@section('page_title', 'Dashboard')
+@section('page_subtitle', 'Akses layanan akademik sesuai peran Anda.')
 
 @section('content')
-<div class="space-y-6">
-
-    <!-- Welcome Hero Banner -->
-    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-700 via-indigo-600 to-purple-600 p-6 md:p-8 text-white shadow-xl">
-        <div class="relative z-10 max-w-2xl">
-            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-white/20 text-white backdrop-blur-sm mb-3">
-                @if(Auth::user()->isAdmin())
-                    Role: Administrator Sistem
-                @elseif(Auth::user()->isLecturer())
-                    Role: Dosen Pengajar
-                @else
-                    Role: Mahasiswa Aktif
-                @endif
-            </span>
-            <h2 class="text-2xl md:text-3xl font-bold tracking-tight">Selamat Datang, {{ Auth::user()->name }}!</h2>
-            <p class="mt-2 text-indigo-100 text-sm leading-relaxed">
-                @if(Auth::user()->isAdmin())
-                    Anda memiliki akses penuh untuk mengelola master data Mahasiswa, Dosen, Jadwal Kuliah, dan Penilaian Akademik.
-                @elseif(Auth::user()->isLecturer())
-                    Anda dapat melihat jadwal mengajar Anda serta menginput dan mengelola nilai mahasiswa untuk mata kuliah yang Anda ampu.
-                @else
-                    Anda dapat memantau jadwal kuliah perkuliahan dan mengecek riwayat nilai serta Kartu Hasil Studi (KHS) Anda.
-                @endif
-            </p>
-        </div>
-        <div class="absolute -right-6 -bottom-10 opacity-15 pointer-events-none">
-            <svg class="w-64 h-64 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg>
-        </div>
-    </div>
+    @php
+        $dashboardRole = match (auth()->user()->role) {
+            'admin' => 'Admin',
+            'lecturer' => 'Dosen',
+            'student' => 'Mahasiswa',
+            default => 'Pengguna',
+        };
+    @endphp
+    <div class="space-y-6">
+    <section class="welcome-panel" aria-labelledby="welcome-title">
+        <h2 id="welcome-title">Selamat datang, {{ auth()->user()->name }}</h2>
+        <p class="welcome-role">Anda login sebagai: <strong>{{ $dashboardRole }}</strong></p>
+        @if(auth()->user()->isAdmin())
+            <p class="muted">Gunakan menu untuk mengelola data mahasiswa, dosen, dan jadwal kuliah.</p>
+        @elseif(auth()->user()->isLecturer())
+            <p class="muted">Buka Jadwal Mengajar untuk melihat jadwal Anda, atau Input Nilai untuk mengelola nilai mahasiswa.</p>
+        @elseif(auth()->user()->isStudent())
+            <p class="muted">Buka Jadwal Kuliah untuk melihat jadwal, atau Nilai untuk melihat hasil belajar Anda.</p>
+        @endif
+    </section>
 
     @if(Auth::user()->isAdmin())
     <!-- Admin Statistics -->
@@ -67,7 +58,7 @@
             <div>
                 <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Mata Kuliah</p>
                 <p class="text-2xl font-bold text-slate-800">{{ $totalCourses }}</p>
-                <span class="text-xs text-slate-400">Aktif Semester Ini</span>
+                <span class="text-xs text-slate-400">Terdaftar</span>
             </div>
         </div>
 
@@ -88,7 +79,7 @@
         <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
             <div>
                 <h3 class="font-bold text-slate-800">Jadwal Perkuliahan Terkini</h3>
-                <p class="text-xs text-slate-500">Daftar jadwal perkuliahan semester berjalan</p>
+                <p class="text-xs text-slate-500">Lima jadwal terakhir yang ditambahkan</p>
             </div>
             <a href="{{ route('schedules.index') }}" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800">Lihat Semua Jadwal &rarr;</a>
         </div>
@@ -149,7 +140,7 @@
                 </div>
                 <div class="pt-2 border-t border-slate-100">
                     <span class="text-xs text-slate-400 block">Status Akun Terhubung</span>
-                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-800 mt-1">✓ Terhubung ke User Akun</span>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-800 mt-1">{{ $lecturer ? 'Terhubung' : 'Profil belum tersedia' }}</span>
                 </div>
             </div>
         </div>
@@ -157,7 +148,7 @@
         <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm md:col-span-2">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Jadwal Mengajar Saya</h3>
-                <a href="{{ route('grades.create') }}" class="inline-flex items-center px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold shadow">
+                <a href="{{ route(\Illuminate\Support\Facades\Route::has('dosen.nilai.index') ? 'dosen.nilai.index' : 'grades.index') }}" class="inline-flex items-center px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold shadow">
                     + Input Nilai Mahasiswa
                 </a>
             </div>
@@ -204,7 +195,7 @@
                 </div>
                 <div>
                     <span class="text-xs text-slate-400 block">Semester Saat Ini</span>
-                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-sky-100 text-sky-800">Semester {{ $student->semester ?? 1 }}</span>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-sky-100 text-sky-800">Semester {{ $student->semester ?? '-' }}</span>
                 </div>
                 <div>
                     <span class="text-xs text-slate-400 block">Email Mahasiswa</span>
@@ -221,7 +212,7 @@
                 </div>
                 <div class="text-right">
                     <span class="text-xs text-slate-400 block">Rata-rata Nilai</span>
-                    <span class="text-xl font-black text-indigo-600">{{ number_format($averageScore, 2) }}</span>
+                    <span class="text-xl font-black text-indigo-600">{{ $grades->isEmpty() ? '-' : number_format($averageScore, 2) }}</span>
                 </div>
             </div>
 
@@ -263,6 +254,5 @@
         </div>
     </div>
     @endif
-
-</div>
+    </div>
 @endsection

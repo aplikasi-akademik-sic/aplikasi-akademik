@@ -87,5 +87,22 @@
             </table>
         </div>
     </div>
+    @if(auth()->user()->isAdmin())
+        <section id="hapus-dosen" aria-labelledby="judul-hapus-dosen" class="student-form">
+            <h3 id="judul-hapus-dosen" class="font-bold">Hapus data dosen</h3>
+            @if($lecturer->schedules->isNotEmpty())
+                <p>Dosen ini masih memiliki {{ $lecturer->schedules->count() }} jadwal mengajar. Alihkan jadwal tersebut sebelum menghapus data dosen.</p>
+                <a class="student-action" href="{{ route('lecturers.index') }}">Kembali ke daftar dosen</a>
+            @else
+                <p>Hapus data {{ $lecturer->name }} (NIDN {{ $lecturer->nidn }})? Akun login yang terhubung akan tetap ada.</p>
+                <form method="POST" action="{{ route('lecturers.destroy', $lecturer) }}" class="flex flex-wrap gap-3">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="academic-button danger-button">Ya, hapus dosen</button>
+                    <a class="academic-button" href="{{ route('lecturers.index') }}">Batal</a>
+                </form>
+            @endif
+        </section>
+    @endif
 </div>
 @endsection
