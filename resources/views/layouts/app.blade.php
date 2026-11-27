@@ -16,31 +16,46 @@
 </head>
 <body class="academic-app">
     <a href="#main-content" class="skip-link">Lewati ke konten utama</a>
-    <header class="app-header">
-        <a href="{{ route('dashboard') }}" class="product-name" aria-label="SIAKAD, Dashboard">SIAKAD <span>Portal Akademik</span></a>
-        <div class="header-account">
-            <details class="account-menu">
-                <summary class="account-name">{{ auth()->user()->name }} <span class="muted">({{ $roleLabel }})</span></summary>
-                <div class="account-links">
-                    <a href="{{ route('profile.edit') }}">Profil saya</a>
-                    @if(auth()->user()->isAdmin())
-                        <a href="{{ route('admins.index') }}">Kelola admin</a>
-                    @endif
-                </div>
-            </details>
-            <form action="{{ route('logout') }}" method="POST" data-submit-feedback>
-                @csrf
-                <button type="submit" class="academic-button" data-busy-label="Keluar...">Logout</button>
-            </form>
+    <header class="portal-header">
+        <div class="app-header">
+            <button type="button" class="menu-toggle academic-button" aria-expanded="false" aria-controls="module-drawer" hidden>Menu</button>
+            <a href="{{ route('dashboard') }}" class="portal-brand" aria-label="SIAKAD, Dashboard">
+                @include('layouts._mark')
+                <span class="product-name">SIAKAD <span>Portal Akademik</span></span>
+            </a>
+            <div class="header-account">
+                <details class="account-menu">
+                    <summary class="account-name">
+                        <span class="account-initial" aria-hidden="true">{{ mb_strtoupper(mb_substr(auth()->user()->name, 0, 1)) }}</span>
+                        <span class="account-identity">{{ auth()->user()->name }} <small>{{ $roleLabel }}</small></span>
+                    </summary>
+                    <div class="account-links">
+                        <p class="account-mobile-caption">{{ auth()->user()->name }} · {{ $roleLabel }}</p>
+                        <a href="{{ route('profile.edit') }}">Profil saya</a>
+                        @if(auth()->user()->isAdmin())
+                            <a href="{{ route('admins.index') }}">Kelola admin</a>
+                        @endif
+                    </div>
+                </details>
+                <form action="{{ route('logout') }}" method="POST" data-submit-feedback>
+                    @csrf
+                    <button type="submit" class="academic-button" data-busy-label="Keluar...">Logout</button>
+                </form>
+            </div>
         </div>
     </header>
     <div class="app-body">
         <aside class="app-sidebar" aria-label="Navigasi aplikasi">
-            <button type="button" class="menu-toggle academic-button" aria-expanded="true" aria-controls="role-navigation" hidden>Menu</button>
             @include('layouts._navigation')
         </aside>
+        <dialog id="module-drawer" aria-label="Navigasi aplikasi">
+            <form method="dialog"><button class="academic-button" autofocus>Tutup menu</button></form>
+        </dialog>
         <main id="main-content" class="app-content" tabindex="-1">
             <div class="page-heading">
+                @unless(request()->routeIs('dashboard'))
+                    <a class="dashboard-back" href="{{ route('dashboard') }}"><span aria-hidden="true">←</span> Dashboard</a>
+                @endunless
                 <h1>@yield('page_title', 'Dashboard')</h1>
                 @hasSection('page_subtitle')
                     <p class="muted">@yield('page_subtitle')</p>

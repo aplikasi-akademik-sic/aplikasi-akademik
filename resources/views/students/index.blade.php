@@ -20,10 +20,23 @@
                 <a class="academic-button primary-button" href="{{ route('students.create') }}">Tambah Mahasiswa</a>
             @endif
         </div>
+        @if(filled($search))
+            <p class="px-5 py-3 text-sm muted" role="status">{{ $students->total() }} mahasiswa ditemukan untuk “{{ $search }}”.</p>
+        @endif
         @if($students->isEmpty())
-            <p class="p-6 muted">{{ filled($search) ? 'Tidak ada mahasiswa yang cocok. Coba NIM, nama, atau email lain.' : 'Belum ada data mahasiswa.' }}</p>
+            <p class="p-6 muted">{{ filled($search) ? 'Coba NIM, nama, atau email lain.' : 'Belum ada data mahasiswa.' }}</p>
         @else
-            <div class="overflow-x-auto" tabindex="0" role="region" aria-label="Tabel data mahasiswa">
+            <ul class="md:hidden" aria-label="Mahasiswa">
+                @foreach($students as $student)
+                    <li class="border-t border-slate-200 px-5 py-3">
+                        @include('layouts._record-link', ['url' => route('students.show', $student), 'label' => $student->name])
+                        <p class="text-sm"><span class="muted">NIM</span> {{ $student->student_number }} · Semester {{ $student->semester }}</p>
+                        <p class="text-sm muted wrap-anywhere">{{ $student->email }}</p>
+                        @include('students._actions')
+                    </li>
+                @endforeach
+            </ul>
+            <div class="hidden overflow-x-auto md:block" tabindex="0" role="region" aria-label="Tabel data mahasiswa">
                 <table class="student-table">
                     <thead><tr>
                         @foreach(['NIM', 'Nama', 'Email', 'Semester', 'Aksi'] as $heading)
@@ -34,26 +47,11 @@
                         @foreach($students as $student)
                             <tr>
                                 <th scope="row" class="font-mono">{{ $student->student_number }}</th>
-                                <td><a class="student-action" href="{{ route('students.show', $student) }}">{{ $student->name }}</a></td>
+                                <td>@include('layouts._record-link', ['url' => route('students.show', $student), 'label' => $student->name])</td>
                                 <td>{{ $student->email }}</td>
                                 <td>{{ $student->semester }}</td>
                                 <td>
-                                    @if(auth()->user()->isAdmin())
-                                        <div class="student-actions">
-                                            <a class="student-action" href="{{ route('students.edit', $student) }}" aria-label="Ubah {{ $student->name }}">Ubah</a>
-                                            <details class="student-delete">
-                                                <summary aria-label="Konfirmasi hapus {{ $student->name }}"><span class="delete-label">Hapus</span><span class="cancel-label">Batal</span></summary>
-                                                <form method="POST" action="{{ route('students.destroy', $student) }}">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <p>Hapus {{ $student->name }} ({{ $student->student_number }}) beserta nilainya? Akun loginnya tetap ada.</p>
-                                                    <button type="submit" class="academic-button danger-button">Ya, hapus</button>
-                                                </form>
-                                            </details>
-                                        </div>
-                                    @else
-                                        <a class="student-action" href="{{ route('students.show', $student) }}">Detail</a>
-                                    @endif
+                                    @include('students._actions')
                                 </td>
                             </tr>
                         @endforeach

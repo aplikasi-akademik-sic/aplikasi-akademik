@@ -26,21 +26,21 @@
             <div class="overflow-x-auto" tabindex="0" role="region" aria-label="Tabel data dosen">
                 <table class="student-table directory-table">
                     <thead><tr>
-                        <th scope="col">NIDN</th>
                         <th scope="col">Nama</th>
+                        <th scope="col">NIDN</th>
                         <th scope="col">Email</th>
                         @if(auth()->user()->isAdmin()) <th scope="col">Aksi</th> @endif
                     </tr></thead>
                     <tbody>
                         @foreach($lecturers as $lecturer)
                             <tr>
-                                <th scope="row" class="font-mono">{{ $lecturer->nidn }}</th>
-                                <td><a class="student-action" href="{{ route('lecturers.show', $lecturer) }}">{{ $lecturer->name }}</a></td>
+                                <th scope="row">@include('layouts._record-link', ['url' => route('lecturers.show', $lecturer), 'label' => $lecturer->name])</th>
+                                <td><span class="record-id">{{ $lecturer->nidn }}</span></td>
                                 <td>{{ $lecturer->email }}</td>
                                 @if(auth()->user()->isAdmin())
                                     <td><div class="student-actions">
-                                        <a class="student-action" href="{{ route('lecturers.edit', $lecturer) }}" aria-label="Ubah {{ $lecturer->name }}">Ubah</a>
-                                        <a class="student-action text-red-800!" href="{{ route('lecturers.show', $lecturer) }}#hapus-dosen" aria-label="Hapus {{ $lecturer->name }}">Hapus</a>
+                                        <a class="student-action" href="{{ route('lecturers.edit', $lecturer) }}" aria-label="Ubah {{ $lecturer->name }}">@include('layouts._action-icon', ['action' => 'edit']) Ubah</a>
+                                        <a class="student-action remove-record" href="{{ route('lecturers.show', $lecturer) }}#hapus-dosen" aria-label="Hapus {{ $lecturer->name }}">@include('layouts._action-icon', ['action' => 'delete']) Hapus</a>
                                     </div></td>
                                 @endif
                             </tr>

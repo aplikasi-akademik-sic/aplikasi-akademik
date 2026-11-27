@@ -21,9 +21,9 @@
                                 <td>@include('informasi._tanggal')</td>
                                 <td>
                                     <div class="student-actions">
-                                        <a class="student-action" href="{{ route('admin.informasi.edit', $item->id) }}">Ubah<span class="sr-only"> {{ $item->judul }}</span></a>
+                                        <a class="student-action" href="{{ route('admin.informasi.edit', $item->id) }}">@include('layouts._action-icon', ['action' => 'edit']) Ubah<span class="sr-only"> {{ $item->judul }}</span></a>
                                         <details class="student-delete">
-                                            <summary><span class="delete-label">Hapus</span><span class="cancel-label">Batal</span><span class="sr-only"> {{ $item->judul }}</span></summary>
+                                            <summary><span class="delete-label">@include('layouts._action-icon', ['action' => 'delete']) Hapus</span><span class="cancel-label">Batal</span><span class="sr-only"> {{ $item->judul }}</span></summary>
                                             <form method="POST" action="{{ route('admin.informasi.destroy', $item->id) }}">
                                                 @csrf
                                                 @method('DELETE')

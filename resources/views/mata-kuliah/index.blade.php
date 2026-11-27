@@ -28,9 +28,9 @@
                                 <td>{{ $mk->sks }}</td>
                                 <td>{{ $mk->semester ?? 'Belum diisi' }}</td>
                                 <td><div class="student-actions">
-                                    <a class="student-action" href="{{ route('admin.mata-kuliah.edit', $mk->id) }}" aria-label="Ubah {{ $mk->nama }}">Ubah</a>
+                                    <a class="student-action" href="{{ route('admin.mata-kuliah.edit', $mk->id) }}" aria-label="Ubah {{ $mk->nama }}">@include('layouts._action-icon', ['action' => 'edit']) Ubah</a>
                                     <details class="student-delete">
-                                        <summary aria-label="Konfirmasi hapus {{ $mk->nama }}"><span class="delete-label">Hapus</span><span class="cancel-label">Batal</span></summary>
+                                        <summary><span class="sr-only">{{ $mk->nama }} — </span><span class="delete-label">@include('layouts._action-icon', ['action' => 'delete']) Hapus</span><span class="cancel-label">Batal</span></summary>
                                         <form method="POST" action="{{ route('admin.mata-kuliah.destroy', $mk->id) }}">
                                             @csrf
                                             @method('DELETE')

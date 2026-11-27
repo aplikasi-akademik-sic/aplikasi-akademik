@@ -93,7 +93,7 @@
                         <td class="px-6 py-3.5 text-right whitespace-nowrap">
                             @if(Auth::user()->isAdmin() || (Auth::user()->isLecturer() && Auth::user()->lecturerProfile?->id === $schedule->lecturer_id))
                             <a href="{{ route('grades.edit', $grade) }}" class="inline-flex items-center px-2 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded text-xs font-semibold">
-                                Edit Nilai
+                                @include('layouts._action-icon', ['action' => 'edit']) Ubah nilai
                             </a>
                             @endif
                         </td>

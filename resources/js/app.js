@@ -1,25 +1,45 @@
 const menuButton = document.querySelector('.menu-toggle');
 const navigation = document.querySelector('#role-navigation');
+const passwordToggle = document.querySelector('[data-password-toggle]');
+if (passwordToggle) {
+    const password = document.getElementById(passwordToggle.getAttribute('aria-controls'));
+    passwordToggle.hidden = false;
+    passwordToggle.addEventListener('click', () => {
+        const reveal = password.type === 'password';
+        password.type = reveal ? 'text' : 'password';
+        passwordToggle.textContent = reveal ? 'Sembunyikan password' : 'Lihat password';
+    });
+}
+const portalHeader = document.querySelector('.portal-header');
 
-if (menuButton && navigation) {
+if (portalHeader && 'ResizeObserver' in window) {
+    new ResizeObserver(() => {
+        document.documentElement.style.setProperty('--portal-header-height', portalHeader.offsetHeight + 'px');
+    }).observe(portalHeader);
+}
+
+const drawer = document.querySelector('#module-drawer');
+if (menuButton && navigation && drawer) {
+    const sidebar = navigation.parentElement;
     const mobileViewport = window.matchMedia('(max-width: 760px)');
-    const setMenuOpen = (open) => {
-        navigation.hidden = !open;
-        menuButton.setAttribute('aria-expanded', String(open));
-    };
     const syncMenu = () => {
+        drawer.close();
         menuButton.hidden = !mobileViewport.matches;
-        setMenuOpen(!mobileViewport.matches);
+        sidebar.hidden = mobileViewport.matches;
+        (mobileViewport.matches ? drawer : sidebar).append(navigation);
     };
-    syncMenu();
-    mobileViewport.addEventListener('change', syncMenu);
-    menuButton.addEventListener('click', () => setMenuOpen(navigation.hidden));
-    document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape' && mobileViewport.matches && !navigation.hidden) {
-            setMenuOpen(false);
-            menuButton.focus();
+    menuButton.addEventListener('click', () => {
+        drawer.showModal();
+        menuButton.setAttribute('aria-expanded', 'true');
+    });
+    drawer.addEventListener('close', () => menuButton.setAttribute('aria-expanded', 'false'));
+    drawer.addEventListener('click', (event) => {
+        if (event.target.closest('a') || (event.target === drawer && event.clientX >= drawer.getBoundingClientRect().right)) {
+            drawer.close();
         }
     });
+    syncMenu();
+    mobileViewport.addEventListener('change', syncMenu);
 }
 
 document.querySelectorAll('[data-required-message]').forEach((input) => {

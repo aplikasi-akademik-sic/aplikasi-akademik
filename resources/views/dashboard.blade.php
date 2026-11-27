@@ -2,7 +2,6 @@
 
 @section('title', 'Dashboard')
 @section('page_title', 'Dashboard')
-@section('page_subtitle', 'Akses layanan akademik sesuai peran Anda.')
 
 @section('content')
     @php
@@ -15,20 +14,21 @@
     @endphp
     <div class="space-y-6">
     <section class="welcome-panel" aria-labelledby="welcome-title">
+        <time class="welcome-date" datetime="{{ now('Asia/Jakarta')->toDateString() }}">{{ now('Asia/Jakarta')->locale('id')->translatedFormat('l, j F Y') }}</time>
         <h2 id="welcome-title">Selamat datang, {{ auth()->user()->name }}</h2>
         <p class="welcome-role">Anda login sebagai: <strong>{{ $dashboardRole }}</strong></p>
         @if(auth()->user()->isAdmin())
-            <p class="muted">Gunakan menu untuk mengelola data mahasiswa, dosen, dan jadwal kuliah.</p>
+            <a class="welcome-link" href="{{ route('schedules.index') }}">Kelola jadwal kuliah <span aria-hidden="true">→</span></a>
         @elseif(auth()->user()->isLecturer())
-            <p class="muted">Buka Jadwal Mengajar untuk melihat jadwal Anda, atau Input Nilai untuk mengelola nilai mahasiswa.</p>
+            <a class="welcome-link" href="{{ route('schedules.index') }}">Lihat jadwal mengajar <span aria-hidden="true">→</span></a>
         @elseif(auth()->user()->isStudent())
-            <p class="muted">Buka Jadwal Kuliah untuk melihat jadwal, atau Nilai untuk melihat hasil belajar Anda.</p>
+            <a class="welcome-link" href="{{ route('grades.index') }}">Buka hasil studi <span aria-hidden="true">→</span></a>
         @endif
     </section>
 
     @if(Auth::user()->isAdmin())
     <!-- Admin Statistics -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+    <div class="dashboard-totals grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center space-x-4">
             <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
@@ -83,7 +83,7 @@
             </div>
             <a href="{{ route('schedules.index') }}" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800">Lihat Semua Jadwal &rarr;</a>
         </div>
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto" tabindex="0" role="region" aria-label="Jadwal perkuliahan terkini">
             <table class="w-full text-left text-sm text-slate-600">
                 <thead class="bg-slate-50 text-slate-700 text-xs uppercase font-semibold border-b border-slate-100">
                     <tr>
@@ -97,16 +97,16 @@
                     @forelse($recentSchedules as $item)
                     <tr class="hover:bg-slate-50/70 transition">
                         <td class="px-6 py-3.5 whitespace-nowrap">
-                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 text-slate-800 mr-2">{{ $item->day }}</span>
-                            <span class="text-xs text-slate-500 font-mono">{{ substr($item->start_time, 0, 5) }} - {{ substr($item->end_time, 0, 5) }}</span>
+                            <strong class="schedule-day">{{ $item->day }}</strong>
+                            <small class="course-meta">{{ substr($item->start_time, 0, 5) }} – {{ substr($item->end_time, 0, 5) }}</small>
                         </td>
                         <td class="px-6 py-3.5">
                             <div class="font-semibold text-slate-800">{{ $item->course->name ?? '-' }}</div>
-                            <div class="text-xs text-slate-400 font-mono">{{ $item->course->code ?? '' }} &bull; {{ $item->course->credits ?? 0 }} SKS</div>
+                            <small class="course-meta">{{ $item->course->code ?? '' }} · {{ $item->course->credits ?? 0 }} SKS</small>
                         </td>
                         <td class="px-6 py-3.5 text-slate-700">{{ $item->lecturer->name ?? '-' }}</td>
                         <td class="px-6 py-3.5">
-                            <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-100">{{ $item->room }}</span>
+                            <span class="schedule-room">{{ $item->room }}</span>
                         </td>
                     </tr>
                     @empty

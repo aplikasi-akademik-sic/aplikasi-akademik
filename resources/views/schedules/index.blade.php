@@ -27,7 +27,7 @@
                     <label for="day">Hari kuliah</label>
                     <select id="day" name="day">
                         <option value="">Semua hari</option>
-                        @foreach(['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'] as $day)
+                        @foreach(['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'] as $day)
                             <option @selected($dayFilter === $day)>{{ $day }}</option>
                         @endforeach
                     </select>
@@ -57,19 +57,22 @@
                             <th scope="row">
                                 @if($user->isStudent())
                                     {{ $schedule->course?->name }}
+                                    @if($schedule->course)
+                                        <small class="course-meta">{{ $schedule->course->code }} · {{ $schedule->course->credits }} SKS</small>
+                                    @endif
                                 @else
-                                    <a class="student-action" href="{{ route('schedules.show', $schedule) }}">{{ $schedule->course?->name }}</a>
+                                    @include('layouts._record-link', ['url' => route('schedules.show', $schedule), 'label' => $schedule->course?->name, 'courseCode' => $schedule->course?->code, 'credits' => $schedule->course?->credits])
                                 @endif
                             </th>
                             @unless($isLecturer)<td>{{ $schedule->lecturer?->name }}</td>@endunless
-                            <td>{{ $schedule->day }}</td>
+                            <td><strong class="schedule-day">{{ $schedule->day }}</strong></td>
                             <td class="whitespace-nowrap">{{ substr($schedule->start_time, 0, 5) }} – {{ substr($schedule->end_time, 0, 5) }}</td>
-                            <td>{{ $schedule->room }}</td>
+                            <td><span class="schedule-room">{{ $schedule->room }}</span></td>
                             @if($isAdmin)
                                 <td><div class="student-actions">
-                                    <a class="student-action" href="{{ route('schedules.edit', $schedule) }}">Ubah</a>
+                                    <a class="student-action" href="{{ route('schedules.edit', $schedule) }}">@include('layouts._action-icon', ['action' => 'edit']) Ubah</a>
                                     <details class="student-delete">
-                                        <summary><span class="delete-label">Hapus</span><span class="cancel-label">Batal</span></summary>
+                                        <summary><span class="delete-label">@include('layouts._action-icon', ['action' => 'delete']) Hapus</span><span class="cancel-label">Batal</span></summary>
                                         <form method="POST" action="{{ route('schedules.destroy', $schedule) }}">
                                             @csrf
                                             @method('DELETE')

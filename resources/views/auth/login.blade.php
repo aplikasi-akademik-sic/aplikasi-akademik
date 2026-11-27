@@ -8,7 +8,12 @@
 </head>
 <body class="academic-login">
     <main class="login-panel" aria-labelledby="login-title">
-        <p class="product-name">SIAKAD <span>Portal Akademik</span></p>
+        <div class="login-identity">
+            @include('layouts._mark')
+            <p class="login-wordmark">SIAKAD</p>
+            <p>Sistem Informasi Akademik</p>
+        </div>
+        <div class="login-fields">
         <h1 id="login-title">Login</h1>
         <p class="muted">Masuk dengan akun yang diberikan oleh admin.</p>
         @if(session('success'))
@@ -33,7 +38,10 @@
                 @enderror
             </div>
             <div class="form-field">
-                <label for="password">Password</label>
+                <div class="password-label">
+                    <label for="password">Password</label>
+                    <button type="button" hidden data-password-toggle aria-controls="password">Lihat password</button>
+                </div>
                 <input type="password" id="password" name="password" required autocomplete="current-password"
                     data-required-message="Password wajib diisi."
                     @error('password') aria-invalid="true" aria-describedby="password-error" @enderror>
@@ -58,7 +66,7 @@
                 </div>
             </details>
         @endenv
-        <p class="login-footer">Sistem Informasi Akademik</p>
+        </div>
     </main>
 </body>
 </html>

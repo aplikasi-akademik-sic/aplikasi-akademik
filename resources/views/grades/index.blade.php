@@ -83,13 +83,13 @@
                     @if(Auth::user()->isAdmin() || Auth::user()->isLecturer())
                     <td class="px-6 py-4 text-right space-x-1 whitespace-nowrap">
                         <a href="{{ route('grades.edit', $grade) }}" class="inline-flex items-center px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-xs font-semibold transition">
-                            Edit
+                            @include('layouts._action-icon', ['action' => 'edit']) Ubah
                         </a>
                         <form action="{{ route('grades.destroy', $grade) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data nilai ini?')">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="inline-flex items-center px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg text-xs font-semibold transition">
-                                Hapus
+                                @include('layouts._action-icon', ['action' => 'delete']) Hapus
                             </button>
                         </form>
                     </td>

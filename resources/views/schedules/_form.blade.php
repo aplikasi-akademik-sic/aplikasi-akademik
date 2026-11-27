@@ -1,7 +1,7 @@
 @foreach([
     'course_id' => ['Mata kuliah', $courses->mapWithKeys(fn ($course) => [$course->id => $course->code . ' · ' . $course->name])],
     'lecturer_id' => ['Dosen pengampu', $lecturers->mapWithKeys(fn ($lecturer) => [$lecturer->id => $lecturer->name . ' (' . $lecturer->nidn . ')'])],
-    'day' => ['Hari', collect(['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'])->mapWithKeys(fn ($day) => [$day => $day])],
+    'day' => ['Hari', collect(['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'])->mapWithKeys(fn ($day) => [$day => $day])],
 ] as $field => [$label, $options])
     <div class="form-field">
         <label for="{{ $field }}">{{ $label }}</label>
